@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EntroPass — the workbench</title>
+<meta name="description" content="Forge strong passwords, temper memorable passphrases, and test what you've already got — all in your browser, nothing ever leaves your device." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #f7eedb;
+    --bg-deep: #efe3c8;
+    --panel: #ffffff;
+    --panel-2: #f3ecdd;
+    --border: #e4d6b8;
+    --border-soft: #ece1c8;
+
+    --coral: #ff6f61;
+    --coral-text: #c2402c;
+    --orange: #faa968;
+    --gold: #f2c94c;
+    --teal: #0f7f7f;
+    --trust: #2a4e7e;
+
+    --text: #1f2a3d;
+    --muted: #5c6b82;
+    --steel: #8695ac;
+    --steel-dim: #b7c2d6;
+    --good: #0f7f7f;
+    --radius: 6px;
+    --maxw: 760px;
+  }
+
+  :root[data-theme="dark"]{
+    --bg: #10141c;
+    --bg-deep: #0a0d13;
+    --panel: #1a212e;
+    --panel-2: #212938;
+    --border: #2d3548;
+    --border-soft: #262e3f;
+
+    --coral: #ff8a76;
+    --coral-text: #ff9d8c;
+    --orange: #ffbb7a;
+    --gold: #f7d774;
+    --teal: #35d6c0;
+    --trust: #7fa8f0;
+
+    --text: #eef1f7;
+    --muted: #97a3ba;
+    --steel: #6b7890;
+    --steel-dim: #3c4459;
+    --good: #35d6c0;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Archivo', sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .ember-bg{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .ember-bg::before{
+    content:"";
+    position:absolute;
+    width: 520px; height: 520px;
+    left: -180px; top: -220px;
+    background: radial-gradient(circle, rgba(42,78,126,0.08) 0%, rgba(42,78,126,0) 70%);
+    border-radius: 50%;
+    animation: breathe 9s ease-in-out infinite;
+  }
+  .ember-bg::after{
+    content:"";
+    position:absolute;
+    width: 420px; height: 420px;
+    right: -140px; top: 40%;
+    background: radial-gradient(circle, rgba(242,201,76,0.10) 0%, rgba(242,201,76,0) 70%);
+    border-radius: 50%;
+    animation: breathe 11s ease-in-out infinite reverse;
+  }
+  @keyframes breathe{
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.15); opacity: 1; }
+  }
+
+  .rain-bg{
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .rain-char{
+    position: absolute;
+    top: -5%;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--trust);
+    animation-name: rain-fall;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    user-select: none;
+  }
+  @keyframes rain-fall{
+    from{ transform: translateY(-10vh); }
+    to{ transform: translateY(115vh); }
+  }
+
+  main, header.app-header, footer.site-footer{
+    position: relative;
+    z-index: 1;
+  }
+
+  .wrap{
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  @keyframes fade-up{
+    from{ opacity: 0; transform: translateY(12px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  header.app-header{ padding: 40px 0 28px; }
+  header.app-header .back-link{
+    display: inline-block;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    margin-bottom: 14px;
+    animation: fade-up 0.4s ease both;
+  }
+  header.app-header .back-link:hover{ color: var(--trust); }
+  header.app-header .app-title{
+    font-family: 'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(1.7rem, 4vw, 2.2rem);
+    margin: 0 0 10px;
+    color: var(--trust);
+    animation: fade-up 0.45s ease 0.08s both;
+  }
+  header.app-header .app-trust{
+    font-size: 0.86rem;
+    color: var(--good);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    animation: fade-up 0.45s ease 0.16s both;
+  }
+  header.app-header .app-trust svg{ flex-shrink: 0; }
+
+  nav.tabs{
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    animation: fade-up 0.5s ease 1s both;
+  }
+  nav.tabs::-webkit-scrollbar{ display:none; }
+  .tab{
+    appearance: none;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Archivo', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 14px 18px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s ease;
+  }
+  .tab:hover{ color: var(--text); }
+  .tab.active{
+    color: var(--trust);
+    border-bottom-color: var(--orange);
+  }
+  .tab:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible{
+    outline: 2px solid var(--trust);
+    outline-offset: 2px;
+  }
+
+  main{ padding: 36px 0 60px; }
+
+  .panel{ display: none; }
+  .panel.active{ display: block; animation: rise 0.35s ease; }
+  @keyframes rise{
+    from{ opacity: 0; transform: translateY(6px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  .forge-card{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    position: relative;
+    padding: 28px;
+    overflow: hidden;
+  }
+  .forge-card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--coral), var(--orange), var(--gold), var(--teal), var(--trust));
+  }
+  .forge-card.shake{ animation: hammer-shake 0.32s ease; }
+  @keyframes hammer-shake{
+    0%,100%{ transform: translateX(0); }
+    20%{ transform: translateX(-4px); }
+    40%{ transform: translateX(3px); }
+    60%{ transform: translateX(-2px); }
+    80%{ transform: translateX(1px); }
+  }
+
+  .field-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .field-row label{ font-weight: 600; font-size: 0.95rem; }
+  .field-row .readout{
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--trust);
+    font-size: 0.95rem;
+    min-width: 2.5ch;
+    text-align: right;
+  }
+  .field-row .live-badge{
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: rgba(15,127,127,0.10);
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  input[type="range"]{
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--coral), var(--orange), var(--gold), var(--teal), var(--trust));
+    margin: 4px 0 20px;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--trust);
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--steel);
+    cursor: pointer;
+    margin-top: 0;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--trust);
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--steel);
+    cursor: pointer;
+  }
+
+  .toggles{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .toggle{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+  }
+  .toggle input{
+    appearance: none;
+    width: 16px; height: 16px;
+    border: 1.5px solid var(--steel);
+    border-radius: 3px;
+    display: grid;
+    place-content: center;
+    margin: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+    background: var(--panel);
+  }
+  .toggle input::before{
+    content: "";
+    width: 9px; height: 9px;
+    transform: scale(0);
+    background: var(--trust);
+    border-radius: 1px;
+    transition: transform 0.1s ease;
+  }
+  .toggle input:checked::before{ transform: scale(1); }
+  .toggle input:checked{ border-color: var(--trust); }
+  .toggle .pool-size{
+    margin-left: auto;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+  }
+
+  .warn-text{
+    font-size: 0.85rem;
+    color: var(--coral-text);
+    margin: -12px 0 18px;
+    min-height: 1.2em;
+  }
+
+  button.forge-btn{
+    appearance: none;
+    border: none;
+    background: linear-gradient(135deg, var(--coral), var(--orange));
+    color: #ffffff;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 13px 22px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    position: relative;
+    transition: filter 0.15s ease, transform 0.1s ease;
+    width: 100%;
+  }
+  button.forge-btn:hover{ filter: brightness(1.06); }
+  button.forge-btn:active{ transform: translateY(1px); }
+  button.forge-btn:disabled{
+    background: var(--panel-2);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+
+  .output-row{ display: flex; gap: 10px; margin: 22px 0 16px; }
+  .password-display{
+    flex: 1;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+    min-height: 1.4em;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    word-break: break-all;
+  }
+  .password-display .char{
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(-8px);
+    animation: char-forge 0.4s ease forwards;
+  }
+  @keyframes char-forge{
+    0%{ opacity: 0; transform: translateY(-8px); color: var(--coral); }
+    60%{ color: var(--gold); }
+    100%{ opacity: 1; transform: translateY(0); color: var(--text); }
+  }
+  .password-display .placeholder{
+    color: var(--muted);
+    font-family: 'Archivo', sans-serif;
+    font-size: 0.95rem;
+  }
+
+  .copy-btn{
+    appearance: none;
+    background: var(--panel-2);
+    border: 1px solid var(--border-soft);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 0 18px;
+    cursor: pointer;
+    font-family: 'Archivo', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: border-color 0.15s ease;
+  }
+  .copy-btn:hover{ border-color: var(--trust); }
+  .copy-btn.copied{ color: var(--good); border-color: var(--good); }
+
+  .heat-meter{ margin: 22px 0 6px; }
+  .heat-track{
+    height: 10px;
+    background: var(--bg-deep);
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .heat-fill{
+    height: 100%;
+    width: 0%;
+    border-radius: 5px;
+    background: var(--coral);
+    transition: width 0.5s ease, background 0.5s ease, box-shadow 0.5s ease;
+  }
+  .heat-fill.glow{ box-shadow: 0 0 10px 0 currentColor; }
+  .heat-label{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .heat-label .state{ font-weight: 600; color: var(--text); }
+
+  .stats{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .stat{
+    background: var(--panel-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+  .stat .stat-label{ font-size: 0.76rem; color: var(--muted); margin-bottom: 4px; }
+  .stat .stat-value{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.02rem;
+    color: var(--trust);
+  }
+
+  .checklist{
+    list-style: none;
+    padding: 0;
+    margin: 20px 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px;
+  }
+  .checklist li{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: var(--muted);
+    background: var(--panel-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+  }
+  .checklist li.met{ color: var(--text); }
+  .checklist li .dot{
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--steel-dim);
+    flex-shrink: 0;
+  }
+  .checklist li.met .dot{ background: var(--good); }
+
+  .tips{
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: rgba(255,111,97,0.10);
+    border: 1px solid rgba(255,111,97,0.30);
+    border-radius: var(--radius);
+    font-size: 0.88rem;
+    color: var(--text);
+  }
+  .tips ul{ margin: 8px 0 0; padding-left: 18px; }
+  .tips li{ margin-bottom: 4px; }
+  .tips.hidden{ display:none; }
+
+  .crack-sim{ margin-top: 20px; }
+  .crack-sim-display{
+    margin-top: 14px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 18px;
+    text-align: center;
+  }
+  .crack-sim-display.hidden{ display: none; }
+  .crack-sim-chars{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.3rem;
+    letter-spacing: 0.08em;
+    word-break: break-all;
+    color: var(--text);
+    min-height: 1.6em;
+  }
+  .crack-sim-counter{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+  .crack-sim-result{
+    margin-top: 14px;
+    font-weight: 700;
+    font-size: 0.98rem;
+  }
+  .crack-sim-result.hidden{ display: none; }
+  .crack-sim-result.weak{ color: var(--coral-text); }
+  .crack-sim-result.strong{ color: var(--trust); }
+  .crack-sim-caption{
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-style: italic;
+    margin: 10px 0 0;
+    text-align: center;
+  }
+
+  .rank-intro{
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0 0 18px;
+  }
+  .rank-list{
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .rank-item{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    cursor: grab;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .rank-item.dragging{ opacity: 0.4; }
+  .rank-item.correct{ border-color: var(--good); background: rgba(15,127,127,0.08); }
+  .rank-item.incorrect{ border-color: var(--coral); background: rgba(255,111,97,0.08); }
+  .rank-item .rank-num{
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .rank-item .rank-text{
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.92rem;
+    word-break: break-all;
+  }
+  .rank-item .rank-explain{
+    display: block;
+    font-family: 'Archivo', sans-serif;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .rank-item .rank-arrows{
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .rank-item .rank-arrows button{
+    appearance: none;
+    background: var(--panel);
+    border: 1px solid var(--border-soft);
+    color: var(--muted);
+    width: 24px; height: 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+  .rank-item .rank-arrows button:hover{ border-color: var(--trust); color: var(--trust); }
+  .rank-actions{
+    display: flex;
+    gap: 10px;
+  }
+  .rank-actions .forge-btn{ flex: 1; }
+  .rank-result{
+    margin-top: 20px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: var(--panel-2);
+    border: 1px solid var(--border-soft);
+    font-size: 0.92rem;
+  }
+  .rank-result.hidden{ display: none; }
+  .rank-result .rank-score{
+    font-weight: 700;
+    color: var(--trust);
+    margin-bottom: 4px;
+  }
+
+  textarea, input[type="text"], input[type="password"]{
+    width: 100%;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Archivo', sans-serif;
+    font-size: 0.98rem;
+    padding: 12px 14px;
+    resize: vertical;
+  }
+  textarea::placeholder, input::placeholder{ color: var(--muted); }
+
+  .show-toggle{ display: flex; justify-content: flex-end; margin-top: 6px; }
+  .show-toggle button{
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+  }
+  .show-toggle button:hover{ color: var(--trust); }
+
+  details.learn-more{
+    margin-top: 20px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    background: var(--panel);
+    padding: 4px 20px;
+  }
+  details.learn-more summary{
+    cursor: pointer;
+    padding: 14px 0;
+    font-weight: 600;
+    font-size: 0.92rem;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  details.learn-more summary::-webkit-details-marker{ display: none; }
+  details.learn-more summary::after{
+    content: "+";
+    color: var(--trust);
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+  details.learn-more[open] summary::after{ content: "–"; }
+  details.learn-more .learn-body{
+    padding: 0 0 20px;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  details.learn-more .learn-body p{ margin: 0 0 12px; }
+  details.learn-more .learn-body strong{ color: var(--text); }
+
+  .pool-bars{ margin-top: 14px; }
+  .pool-bar-row{
+    display: grid;
+    grid-template-columns: 130px 1fr 60px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 0.82rem;
+  }
+  .pool-bar-track{
+    background: var(--bg-deep);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .pool-bar-fill{ height: 100%; background: linear-gradient(90deg, var(--orange), var(--trust)); }
+  .pool-bar-row .pool-bits{
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .spark{
+    position: absolute;
+    width: 4px; height: 4px;
+    background: var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: spark-fly 0.7s ease-out forwards;
+  }
+  @keyframes spark-fly{
+    0%{ opacity: 1; transform: translate(0,0) scale(1); }
+    100%{ opacity: 0; transform: var(--fly-to) scale(0.3); }
+  }
+
+  footer.site-footer{
+    border-top: 1px solid var(--border);
+    padding: 28px 0 60px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  footer.site-footer a{ color: var(--trust); }
+  footer.site-footer a:hover{ color: var(--teal); }
+
+  @media (max-width: 560px){
+    header.app-header{ padding: 28px 0 20px; }
+    .toggles{ grid-template-columns: 1fr; }
+    .forge-card{ padding: 20px; }
+    .pool-bar-row{ grid-template-columns: 96px 1fr 50px; }
+  }
+
+  [data-theme="dark"] .live-badge{ background: rgba(53,214,192,0.16); }
+  [data-theme="dark"] .tips{ background: rgba(255,138,118,0.14); border-color: rgba(255,138,118,0.35); }
+  [data-theme="dark"] .rank-item.correct{ background: rgba(53,214,192,0.14); }
+  [data-theme="dark"] .rank-item.incorrect{ background: rgba(255,138,118,0.14); }
+
+  .theme-toggle{
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 5;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    font-size: 1.05rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .theme-toggle:hover{ border-color: var(--trust); }
+
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="ember-bg" aria-hidden="true"></div>
+<div class="rain-bg" id="rainBg" aria-hidden="true"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
+
+<div class="wrap">
+  <header class="app-header">
+    <a class="back-link" href="index.html">&larr; EntroPass</a>
+    <h1 class="app-title">The workbench</h1>
+    <p class="app-trust">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z"/></svg>
+      Everything here runs in your browser. Nothing you type is sent anywhere.
+    </p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" role="tab" aria-selected="true" data-tab="generate">Generate a password</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="phrase">Temper a passphrase</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="check">Test a password</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="rank">Rank the passwords</button>
+  </nav>
+
+  <main>
+
+    <!-- GENERATE PANEL -->
+    <section id="panel-generate" class="panel active">
+      <div class="forge-card" id="generateCard">
+        <div class="field-row">
+          <label for="lengthSlider">Length</label>
+          <span class="readout" id="lengthReadout">16</span>
+        </div>
+        <input type="range" id="lengthSlider" min="8" max="40" value="16" aria-describedby="lengthReadout" />
+
+        <div class="toggles">
+          <label class="toggle">
+            <input type="checkbox" id="optUpper" checked />
+            Uppercase (A–Z)
+            <span class="pool-size">26</span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="optLower" checked />
+            Lowercase (a–z)
+            <span class="pool-size">26</span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="optDigits" checked />
+            Numbers (0–9)
+            <span class="pool-size">10</span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="optSymbols" checked />
+            Symbols (!@#…)
+            <span class="pool-size">22</span>
+          </label>
+        </div>
+
+        <p class="warn-text" id="generateWarn" role="alert"></p>
+
+        <button class="forge-btn" id="generateBtn">Forge password</button>
+
+        <div class="output-row">
+          <div class="password-display" id="genOutput"><span class="placeholder">Your password will appear here</span></div>
+          <button class="copy-btn" id="genCopyBtn">Copy</button>
+        </div>
+
+        <div class="heat-meter">
+          <div class="heat-track"><div class="heat-fill" id="genHeatFill"></div></div>
+          <div class="heat-label">
+            <span id="genHeatState" class="state">—</span>
+            <span id="genHeatBits"></span>
+          </div>
+        </div>
+
+        <div class="stats" id="genStats"></div>
+      </div>
+
+      <details class="learn-more">
+        <summary>How the temper is measured</summary>
+        <div class="learn-body">
+          <p><strong>It's about entropy, not tricks.</strong> Every character you add multiplies the number of possible passwords, not just adds to it. A longer password with a smaller character set often beats a shorter one stuffed with symbols — that's why length matters more than complexity.</p>
+          <p>We measure strength in <strong>bits of entropy</strong>: roughly, length × log₂(pool size). Each bit doubles the number of guesses an attacker needs to try every combination. The color scale borrows from real blacksmithing: as steel is heat-treated it passes through pale straw, gold, and bronze before reaching blue — the hardest, most durable temper. Your strongest passwords land in that same blue.</p>
+          <div class="pool-bars" id="poolBars"></div>
+          <p style="margin-top:14px;">Crack times assume someone has your password's hash and is guessing offline as fast as modern hardware allows — a worst-case, not a scare tactic.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- PASSPHRASE PANEL -->
+    <section id="panel-phrase" class="panel">
+      <div class="forge-card" id="phraseCard">
+        <div class="field-row" style="margin-bottom:8px;">
+          <label for="phraseInput">A few words you'll actually remember</label>
+        </div>
+        <textarea id="phraseInput" rows="2" placeholder="e.g. purple garden ladder afternoon"></textarea>
+
+        <label class="toggle" style="margin-top:14px; max-width: 220px;">
+          <input type="checkbox" id="phraseKeepSpaces" checked />
+          Keep spaces
+        </label>
+
+        <button class="forge-btn" id="phraseBtn" style="margin-top:18px;">Temper phrase</button>
+
+        <div class="output-row">
+          <div class="password-display" id="phraseOutput"><span class="placeholder">Your tempered passphrase will appear here</span></div>
+          <button class="copy-btn" id="phraseCopyBtn">Copy</button>
+        </div>
+
+        <div class="heat-meter">
+          <div class="heat-track"><div class="heat-fill" id="phraseHeatFill"></div></div>
+          <div class="heat-label">
+            <span id="phraseHeatState" class="state">—</span>
+            <span id="phraseHeatBits"></span>
+          </div>
+        </div>
+
+        <div class="stats" id="phraseStats"></div>
+      </div>
+
+      <details class="learn-more">
+        <summary>What "tempering" does</summary>
+        <div class="learn-body">
+          <p>Start with words you can actually recall — that's the part your memory does. Then we heat-treat them: swap some letters for look-alike numbers and symbols (<strong>a → @, e → 3, i → 1, o → 0, s → $</strong>), and randomly recase letters. The result is much harder to guess than the plain phrase, while staying close enough to what you typed that you can still reconstruct it.</p>
+          <p>Four or five unrelated words tempered this way usually lands in "blue temper" territory — and it's far easier to remember than a random string of the same length.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- CHECK PANEL -->
+    <section id="panel-check" class="panel">
+      <div class="forge-card" id="checkCard">
+        <div class="field-row" style="margin-bottom:8px;">
+          <label for="checkInput">Password to test</label>
+          <span class="live-badge">Updates live</span>
+        </div>
+        <input type="password" id="checkInput" placeholder="Type a password — it never leaves this page" autocomplete="off" />
+        <div class="show-toggle">
+          <button type="button" id="toggleVisibility">Show</button>
+        </div>
+
+        <button class="forge-btn" id="checkBtn" style="margin-top:16px;">Re-check</button>
+
+        <div class="heat-meter">
+          <div class="heat-track"><div class="heat-fill" id="checkHeatFill"></div></div>
+          <div class="heat-label">
+            <span id="checkHeatState" class="state">—</span>
+            <span id="checkHeatBits"></span>
+          </div>
+        </div>
+
+        <ul class="checklist" id="checkList"></ul>
+
+        <div class="stats" id="checkStats"></div>
+
+        <div class="crack-sim" id="crackSim">
+          <button class="copy-btn" id="crackSimBtn" type="button" style="width:100%;">Watch it get cracked</button>
+          <div class="crack-sim-display hidden" id="crackSimDisplay">
+            <div class="crack-sim-chars" id="crackSimChars"></div>
+            <div class="crack-sim-counter" id="crackSimCounter">Guesses tried: 0</div>
+            <div class="crack-sim-result hidden" id="crackSimResult"></div>
+          </div>
+          <p class="crack-sim-caption">Simplified for illustration — real attacks don't guess one character at a time like this, but the speed difference shown is real.</p>
+        </div>
+
+        <div class="tips hidden" id="checkTips">
+          <strong>Ways to raise the temper</strong>
+          <ul id="checkTipsList"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- RANK PANEL -->
+    <section id="panel-rank" class="panel">
+      <div class="forge-card" id="rankCard">
+        <p class="rank-intro">Drag to reorder — or use the arrows — so the list runs from <strong>weakest</strong> at the top to <strong>strongest</strong> at the bottom. Then check your ranking.</p>
+
+        <ul class="rank-list" id="rankList"></ul>
+
+        <div class="rank-actions">
+          <button class="forge-btn" id="rankCheckBtn">Check my ranking</button>
+          <button class="copy-btn" id="rankShuffleBtn">Shuffle again</button>
+        </div>
+
+        <div class="rank-result hidden" id="rankResult"></div>
+      </div>
+
+      <details class="learn-more">
+        <summary>Why order isn't always obvious</summary>
+        <div class="learn-body">
+          <p>Raw entropy math can be misleading. A password like <strong>P@ssw0rd</strong> mixes letters, a symbol, and a digit — but cracking tools try common substitutions on dictionary words first, so it falls fast. Meanwhile <strong>correct horse battery staple</strong>–style passphrases look "simple" but their length alone makes them far harder to brute-force.</p>
+          <p>The lesson: length and unpredictability beat surface-level complexity almost every time.</p>
+        </div>
+      </details>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    EntroPass runs entirely client-side — open the page source any time to check. No accounts, no analytics, no network requests.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Theme toggle ----------
+  const themeToggle = document.getElementById('themeToggle');
+  function applyTheme(theme){
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('entropass-theme', theme);
+    themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+    themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+  applyTheme(localStorage.getItem('entropass-theme') || 'dark');
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- Falling characters ----------
+  (function initRain(){
+    const container = document.getElementById('rainBg');
+    if(!container || reducedMotion) return;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*';
+    const colors = ['var(--trust)', 'var(--teal)', 'var(--gold)', 'var(--coral)'];
+    const count = window.innerWidth < 600 ? 22 : 40;
+    for(let i = 0; i < count; i++){
+      const span = document.createElement('span');
+      span.className = 'rain-char';
+      span.textContent = chars[Math.floor(Math.random() * chars.length)];
+      span.style.left = (Math.random() * 100) + '%';
+      span.style.color = colors[Math.floor(Math.random() * colors.length)];
+      span.style.fontSize = (12 + Math.random() * 10) + 'px';
+      span.style.opacity = (0.12 + Math.random() * 0.18).toFixed(2);
+      const duration = 8 + Math.random() * 14;
+      span.style.animationDuration = duration + 's';
+      span.style.animationDelay = (-Math.random() * duration) + 's';
+      container.appendChild(span);
+    }
+  })();
+
+  // ---------- Tabs ----------
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.panel');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+      panels.forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected','true');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ---------- Character pools ----------
+  const POOL = {
+    upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    lower: "abcdefghijklmnopqrstuvwxyz",
+    digits: "0123456789",
+    symbols: "!@#$%&*_-+=[]{}|~,./?"
+  };
+
+  function secureRandomInt(max){
+    const arr = new Uint32Array(1);
+    crypto.getRandomValues(arr);
+    return arr[0] % max;
+  }
+
+  function pickRandomChar(pool){
+    return pool[secureRandomInt(pool.length)];
+  }
+
+  // ---------- Entropy + temper scale ----------
+  function entropyBits(poolSize, length){
+    if(poolSize <= 1 || length <= 0) return 0;
+    return length * Math.log2(poolSize);
+  }
+
+  function heatCategory(bits){
+    if(bits < 28)  return { label:'Untempered — guessable in seconds', color: 'var(--coral)' };
+    if(bits < 45)  return { label:'Warming up — still weak',           color: 'var(--orange)' };
+    if(bits < 65)  return { label:'Straw temper — reasonable',         color: 'var(--gold)' };
+    if(bits < 90)  return { label:'Blue-bronze temper — strong',       color: 'var(--teal)' };
+    return           { label:'Fully tempered — very strong',           color: 'var(--trust)' };
+  }
+
+  function updateHeat(fillEl, stateEl, bitsEl, bits){
+    const pct = Math.max(2, Math.min(100, (bits / 100) * 100));
+    const cat = heatCategory(bits);
+    fillEl.style.width = pct + '%';
+    fillEl.style.background = cat.color;
+    fillEl.style.color = cat.color;
+    fillEl.classList.toggle('glow', bits >= 45);
+    stateEl.textContent = cat.label;
+    bitsEl.textContent = Math.round(bits) + ' bits of entropy';
+  }
+
+  function formatDuration(seconds){
+    if(seconds < 1) return 'instantly';
+    const units = [
+      ['century', 3153600000],
+      ['year', 31536000],
+      ['day', 86400],
+      ['hour', 3600],
+      ['minute', 60],
+      ['second', 1]
+    ];
+    for(const [name, size] of units){
+      if(seconds >= size){
+        const val = seconds / size;
+        if(val > 1e6) return val.toExponential(1) + ' ' + name + 's';
+        return Math.round(val).toLocaleString() + ' ' + name + (Math.round(val) === 1 ? '' : 's');
+      }
+    }
+    return 'instantly';
+  }
+
+  // Like formatDuration, but never escalates past "years" — no centuries,
+  // no scientific notation until the number of years itself is absurd.
+  function formatDurationInYears(seconds){
+    if(seconds < 1) return 'instantly';
+    const units = [
+      ['year', 31536000],
+      ['day', 86400],
+      ['hour', 3600],
+      ['minute', 60],
+      ['second', 1]
+    ];
+    for(const [name, size] of units){
+      if(seconds >= size){
+        const val = seconds / size;
+        if(val > 1e9) return val.toExponential(1) + ' ' + name + 's';
+        return Math.round(val).toLocaleString() + ' ' + name + (Math.round(val) === 1 ? '' : 's');
+      }
+    }
+    return 'instantly';
+  }
+
+  function crackEstimates(bits){
+    const combos = Math.pow(2, bits);
+    const onlineGuessesPerSec = 100;
+    const offlineGuessesPerSec = 1e10;
+    return {
+      online: formatDurationInYears(combos / onlineGuessesPerSec / 2),
+      offline: formatDuration(combos / offlineGuessesPerSec / 2)
+    };
+  }
+
+  function buildStatsHTML(bits, poolSize, length){
+    const est = crackEstimates(bits);
+    return `
+      <div class="stat"><div class="stat-label">Character pool</div><div class="stat-value">${poolSize} options</div></div>
+      <div class="stat"><div class="stat-label">Length</div><div class="stat-value">${length} chars</div></div>
+      <div class="stat"><div class="stat-label">Online guess time</div><div class="stat-value">${est.online}</div></div>
+      <div class="stat"><div class="stat-label">Offline guess time</div><div class="stat-value">${est.offline}</div></div>
+    `;
+  }
+
+  // ---------- Sparks (generate button feedback) ----------
+  function spawnSparks(container, originEl){
+    if(reducedMotion) return;
+    const rect = originEl.getBoundingClientRect();
+    const parentRect = container.getBoundingClientRect();
+    const originX = rect.left - parentRect.left + rect.width / 2;
+    const originY = rect.top - parentRect.top;
+    for(let i = 0; i < 10; i++){
+      const s = document.createElement('div');
+      s.className = 'spark';
+      const angle = (Math.random() * Math.PI) + Math.PI;
+      const dist = 30 + Math.random() * 40;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist;
+      s.style.left = originX + 'px';
+      s.style.top = originY + 'px';
+      s.style.setProperty('--fly-to', `translate(${dx}px, ${dy}px)`);
+      container.appendChild(s);
+      setTimeout(() => s.remove(), 750);
+    }
+  }
+
+  function shakeCard(card){
+    if(reducedMotion) return;
+    card.classList.remove('shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+  }
+
+  function revealPassword(el, text){
+    el.innerHTML = '';
+    [...text].forEach((ch, i) => {
+      const span = document.createElement('span');
+      span.className = 'char';
+      span.textContent = ch;
+      span.style.animationDelay = (reducedMotion ? 0 : i * 22) + 'ms';
+      el.appendChild(span);
+    });
+  }
+
+  function copyToClipboard(text, btn){
+    if(!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.textContent;
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1400);
+    }).catch(() => {
+      btn.textContent = 'Press Ctrl+C';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 1400);
+    });
+  }
+
+  // ---------- GENERATE ----------
+  const lengthSlider = document.getElementById('lengthSlider');
+  const lengthReadout = document.getElementById('lengthReadout');
+  const optUpper = document.getElementById('optUpper');
+  const optLower = document.getElementById('optLower');
+  const optDigits = document.getElementById('optDigits');
+  const optSymbols = document.getElementById('optSymbols');
+  const generateWarn = document.getElementById('generateWarn');
+  const generateBtn = document.getElementById('generateBtn');
+  const genOutput = document.getElementById('genOutput');
+  const genCopyBtn = document.getElementById('genCopyBtn');
+  const genHeatFill = document.getElementById('genHeatFill');
+  const genHeatState = document.getElementById('genHeatState');
+  const genHeatBits = document.getElementById('genHeatBits');
+  const genStats = document.getElementById('genStats');
+  const generateCard = document.getElementById('generateCard');
+
+  let lastGenerated = '';
+
+  lengthSlider.addEventListener('input', () => { lengthReadout.textContent = lengthSlider.value; });
+
+  function currentPool(){
+    let pool = '';
+    if(optUpper.checked) pool += POOL.upper;
+    if(optLower.checked) pool += POOL.lower;
+    if(optDigits.checked) pool += POOL.digits;
+    if(optSymbols.checked) pool += POOL.symbols;
+    return pool;
+  }
+
+  function validateOptions(){
+    const anyChecked = optUpper.checked || optLower.checked || optDigits.checked || optSymbols.checked;
+    if(!anyChecked){
+      generateWarn.textContent = 'Pick at least one character type to forge with.';
+      generateBtn.disabled = true;
+    } else {
+      generateWarn.textContent = '';
+      generateBtn.disabled = false;
+    }
+    return anyChecked;
+  }
+  [optUpper, optLower, optDigits, optSymbols].forEach(cb => cb.addEventListener('change', validateOptions));
+  validateOptions();
+
+  generateBtn.addEventListener('click', () => {
+    if(!validateOptions()) return;
+    const pool = currentPool();
+    const length = parseInt(lengthSlider.value, 10);
+    let pwd = '';
+    for(let i = 0; i < length; i++) pwd += pickRandomChar(pool);
+    lastGenerated = pwd;
+
+    revealPassword(genOutput, pwd);
+    shakeCard(generateCard);
+    spawnSparks(generateCard, generateBtn);
+
+    const bits = entropyBits(pool.length, length);
+    updateHeat(genHeatFill, genHeatState, genHeatBits, bits);
+    genStats.innerHTML = buildStatsHTML(bits, pool.length, length);
+  });
+
+  genCopyBtn.addEventListener('click', () => copyToClipboard(lastGenerated, genCopyBtn));
+
+  (function buildPoolBars(){
+    const rows = [
+      { label: 'lowercase only', size: 26 },
+      { label: '+ uppercase', size: 52 },
+      { label: '+ numbers', size: 62 },
+      { label: '+ symbols', size: 84 }
+    ];
+    const maxBits = Math.log2(84);
+    const container = document.getElementById('poolBars');
+    container.innerHTML = rows.map(r => {
+      const bitsPerChar = Math.log2(r.size);
+      const pct = (bitsPerChar / maxBits) * 100;
+      return `<div class="pool-bar-row">
+        <span>${r.label}</span>
+        <div class="pool-bar-track"><div class="pool-bar-fill" style="width:${pct}%"></div></div>
+        <span class="pool-bits">${bitsPerChar.toFixed(1)} b/char</span>
+      </div>`;
+    }).join('');
+  })();
+
+  // ---------- PASSPHRASE ----------
+  const phraseInput = document.getElementById('phraseInput');
+  const phraseKeepSpaces = document.getElementById('phraseKeepSpaces');
+  const phraseBtn = document.getElementById('phraseBtn');
+  const phraseOutput = document.getElementById('phraseOutput');
+  const phraseCopyBtn = document.getElementById('phraseCopyBtn');
+  const phraseHeatFill = document.getElementById('phraseHeatFill');
+  const phraseHeatState = document.getElementById('phraseHeatState');
+  const phraseHeatBits = document.getElementById('phraseHeatBits');
+  const phraseStats = document.getElementById('phraseStats');
+  const phraseCard = document.getElementById('phraseCard');
+
+  let lastPhrase = '';
+
+  // Mirrors the unordered_map<char, vector<char>> substitution table in genPassphrase()
+  const SUBSTITUTIONS = {
+    'a': ['@', '4', '^'],
+    'b': ['8', '6'],
+    'e': ['3', '&'],
+    'g': ['9', '6'],
+    'i': ['1', '!', '|'],
+    'l': ['1', '|'],
+    'o': ['0', '*'],
+    's': ['$', '5', 'z'],
+    't': ['7', '+'],
+    'z': ['2', '%', 's']
+  };
+
+  function temper(phrase, includeSpaces){
+    let out = '';
+    for(const rawChar of phrase){
+      if(rawChar === ' ' && !includeSpaces) continue; // skip, matching the C++ "continue"
+
+      const lower = rawChar.toLowerCase();
+      const options = SUBSTITUTIONS[lower];
+      if(options){
+        out += options[secureRandomInt(options.length)];
+      } else if(/[a-z]/.test(lower)){
+        out += secureRandomInt(2) === 0 ? rawChar.toUpperCase() : rawChar.toLowerCase();
+      } else {
+        out += rawChar;
+      }
+    }
+    return out;
+  }
+
+  function phrasePoolSize(text){
+    let hasUpper=false, hasLower=false, hasDigit=false, hasSymbol=false;
+    for(const ch of text){
+      if(/[A-Z]/.test(ch)) hasUpper = true;
+      else if(/[a-z]/.test(ch)) hasLower = true;
+      else if(/[0-9]/.test(ch)) hasDigit = true;
+      else if(ch !== ' ') hasSymbol = true;
+    }
+    let size = 0;
+    if(hasUpper) size += 26;
+    if(hasLower) size += 26;
+    if(hasDigit) size += 10;
+    if(hasSymbol) size += 22;
+    return Math.max(size, 26);
+  }
+
+  phraseBtn.addEventListener('click', () => {
+    const raw = phraseInput.value.trim();
+    if(!raw){
+      phraseOutput.innerHTML = '<span class="placeholder">Type a few words first</span>';
+      return;
+    }
+    const tempered = temper(raw, phraseKeepSpaces.checked);
+    lastPhrase = tempered;
+    revealPassword(phraseOutput, tempered);
+    shakeCard(phraseCard);
+    spawnSparks(phraseCard, phraseBtn);
+
+    const poolSize = phrasePoolSize(tempered);
+    const bits = entropyBits(poolSize, tempered.replace(/ /g,'').length);
+    updateHeat(phraseHeatFill, phraseHeatState, phraseHeatBits, bits);
+    phraseStats.innerHTML = buildStatsHTML(bits, poolSize, tempered.replace(/ /g,'').length);
+  });
+
+  phraseCopyBtn.addEventListener('click', () => copyToClipboard(lastPhrase, phraseCopyBtn));
+
+  // ---------- CHECK ----------
+  const checkInput = document.getElementById('checkInput');
+  const checkBtn = document.getElementById('checkBtn');
+  const toggleVisibility = document.getElementById('toggleVisibility');
+  const checkHeatFill = document.getElementById('checkHeatFill');
+  const checkHeatState = document.getElementById('checkHeatState');
+  const checkHeatBits = document.getElementById('checkHeatBits');
+  const checkList = document.getElementById('checkList');
+  const checkStats = document.getElementById('checkStats');
+  const checkTips = document.getElementById('checkTips');
+  const checkTipsList = document.getElementById('checkTipsList');
+  const checkCard = document.getElementById('checkCard');
+
+  toggleVisibility.addEventListener('click', () => {
+    const isPassword = checkInput.type === 'password';
+    checkInput.type = isPassword ? 'text' : 'password';
+    toggleVisibility.textContent = isPassword ? 'Hide' : 'Show';
+  });
+
+  const COMMON_WEAK = new Set([
+    'password','123456','12345678','qwerty','111111','123456789',
+    'letmein','welcome','admin','abc123','password1','iloveyou'
+  ]);
+
+  function hasSequential(s){
+    const lower = s.toLowerCase();
+    const seqs = ['abcdefghijklmnopqrstuvwxyz', '01234567890'];
+    for(const seq of seqs){
+      for(let i = 0; i <= seq.length - 3; i++){
+        if(lower.includes(seq.slice(i, i+3))) return true;
+      }
+    }
+    return false;
+  }
+
+  function hasRepeats(s){
+    return /(.)\1\1/.test(s);
+  }
+
+  function runCheck(withShake){
+    const pwd = checkInput.value;
+    if(withShake) shakeCard(checkCard);
+
+    if(!pwd){
+      checkList.innerHTML = '';
+      checkStats.innerHTML = '';
+      checkTips.classList.add('hidden');
+      updateHeat(checkHeatFill, checkHeatState, checkHeatBits, 0);
+      lastCheckedPwd = '';
+      lastCheckedBits = 0;
+      lastCheckedIsWeak = false;
+      resetCrackSim();
+      return;
+    }
+
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasLower = /[a-z]/.test(pwd);
+    const hasDigit = /[0-9]/.test(pwd);
+    const hasSymbol = /[^A-Za-z0-9]/.test(pwd);
+    const longEnough = pwd.length >= 12;
+
+    let poolSize = 0;
+    if(hasUpper) poolSize += 26;
+    if(hasLower) poolSize += 26;
+    if(hasDigit) poolSize += 10;
+    if(hasSymbol) poolSize += 22;
+    if(poolSize === 0) poolSize = 1;
+
+    let bits = entropyBits(poolSize, pwd.length);
+
+    const isCommon = COMMON_WEAK.has(pwd.toLowerCase());
+    const sequential = hasSequential(pwd);
+    const repeated = hasRepeats(pwd);
+    if(isCommon) bits = Math.min(bits, 8);
+    else if(sequential || repeated) bits = bits * 0.6;
+
+    updateHeat(checkHeatFill, checkHeatState, checkHeatBits, bits);
+
+    const items = [
+      { met: longEnough, label: '12+ characters' },
+      { met: hasUpper, label: 'Has uppercase' },
+      { met: hasLower, label: 'Has lowercase' },
+      { met: hasDigit, label: 'Has a number' },
+      { met: hasSymbol, label: 'Has a symbol' },
+      { met: !isCommon && !sequential && !repeated, label: 'No obvious patterns' }
+    ];
+    checkList.innerHTML = items.map(it =>
+      `<li class="${it.met ? 'met' : ''}"><span class="dot"></span>${it.label}</li>`
+    ).join('');
+
+    checkStats.innerHTML = buildStatsHTML(bits, poolSize, pwd.length);
+
+    const tips = [];
+    if(!longEnough) tips.push('Add more characters — length adds more strength than complexity.');
+    if(!hasUpper || !hasLower) tips.push('Mix uppercase and lowercase letters.');
+    if(!hasDigit) tips.push('Include at least one number.');
+    if(!hasSymbol) tips.push('Add a symbol like ! # or %.');
+    if(isCommon) tips.push('This is one of the most commonly used passwords — attackers try it first.');
+    if(sequential) tips.push("Avoid runs like \"abc\" or \"123\" — they're guessed early.");
+    if(repeated) tips.push('Avoid repeating the same character three or more times in a row.');
+
+    if(tips.length){
+      checkTipsList.innerHTML = tips.map(t => `<li>${t}</li>`).join('');
+      checkTips.classList.remove('hidden');
+    } else {
+      checkTips.classList.add('hidden');
+    }
+
+    lastCheckedPwd = pwd;
+    lastCheckedBits = bits;
+    lastCheckedIsWeak = isCommon || bits < 35;
+    resetCrackSim();
+  }
+
+  checkBtn.addEventListener('click', () => runCheck(true));
+
+  let checkDebounce = null;
+  checkInput.addEventListener('input', () => {
+    clearTimeout(checkDebounce);
+    checkDebounce = setTimeout(() => runCheck(false), 180);
+  });
+
+  checkInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') runCheck(true);
+  });
+
+  // ---------- CRACK SIMULATOR ----------
+  let lastCheckedPwd = '';
+  let lastCheckedBits = 0;
+  let lastCheckedIsWeak = false;
+
+  const crackSimBtn = document.getElementById('crackSimBtn');
+  const crackSimDisplay = document.getElementById('crackSimDisplay');
+  const crackSimChars = document.getElementById('crackSimChars');
+  const crackSimCounter = document.getElementById('crackSimCounter');
+  const crackSimResult = document.getElementById('crackSimResult');
+  const SCRAMBLE_POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*';
+  let crackSimRunning = false;
+
+  function resetCrackSim(){
+    if(crackSimRunning) return;
+    crackSimDisplay.classList.add('hidden');
+    crackSimResult.classList.add('hidden');
+    crackSimBtn.textContent = 'Watch it get cracked';
+    crackSimBtn.disabled = false;
+  }
+
+  function randomScramble(length){
+    let s = '';
+    for(let i = 0; i < length; i++) s += SCRAMBLE_POOL[secureRandomInt(SCRAMBLE_POOL.length)];
+    return s;
+  }
+
+  crackSimBtn.addEventListener('click', () => {
+    if(!lastCheckedPwd || crackSimRunning) return;
+
+    crackSimRunning = true;
+    crackSimBtn.disabled = true;
+    crackSimDisplay.classList.remove('hidden');
+    crackSimResult.classList.add('hidden');
+    crackSimResult.classList.remove('weak', 'strong');
+
+    const pwdLength = lastCheckedPwd.length;
+    const isWeak = lastCheckedIsWeak;
+    const est = crackEstimates(lastCheckedBits);
+    const duration = isWeak ? 1800 : 3600;
+    const finalCounterTarget = isWeak ? 2000 + secureRandomInt(40000) : 5000000000 + secureRandomInt(4000000000);
+
+    function finish(){
+      crackSimRunning = false;
+      crackSimChars.textContent = lastCheckedPwd;
+      crackSimCounter.textContent = 'Guesses tried: ' + finalCounterTarget.toLocaleString();
+      crackSimResult.classList.remove('hidden');
+      if(isWeak){
+        crackSimResult.classList.add('weak');
+        crackSimResult.textContent = 'Cracked in ' + est.offline + '.';
+      } else {
+        crackSimResult.classList.add('strong');
+        crackSimResult.textContent = 'At this rate, cracking this would take roughly ' + est.offline + '. Stopping here.';
+      }
+      crackSimBtn.textContent = 'Run again';
+      crackSimBtn.disabled = false;
+    }
+
+    if(reducedMotion){
+      finish();
+      return;
+    }
+
+    const start = performance.now();
+    function frame(t){
+      const p = Math.min(1, (t - start) / duration);
+      crackSimChars.textContent = randomScramble(pwdLength);
+      const eased = 1 - Math.pow(1 - p, 2);
+      crackSimCounter.textContent = 'Guesses tried: ' + Math.round(finalCounterTarget * eased).toLocaleString();
+      if(p < 1){
+        requestAnimationFrame(frame);
+      } else {
+        finish();
+      }
+    }
+    requestAnimationFrame(frame);
+  });
+
+  // ---------- RANK THE PASSWORDS ----------
+  const RANK_ITEMS = [
+    { id: 'a', text: '123456', explain: "Tops nearly every breach list. Six digits in a row \u2014 essentially zero real entropy." },
+    { id: 'b', text: 'P@ssw0rd', explain: "Looks complex, but cracking tools try common letter-for-symbol swaps on dictionary words first." },
+    { id: 'c', text: 'Tr0ub4dor&3', explain: "The classic \u2018looks strong, cracks fast\u2019 example \u2014 still a single word with predictable substitutions." },
+    { id: 'd', text: 'correct horse battery staple', explain: "Four unrelated dictionary words. Looks simple, but sheer length makes it very hard to brute-force." },
+    { id: 'e', text: 'xQ7!mZ4$pLk9vT2#', explain: "Fully random, 16 characters, every character type mixed in. No pattern to exploit at all." }
+  ];
+  const RANK_CORRECT_ORDER = ['a','b','c','d','e']; // weakest -> strongest
+
+  const rankList = document.getElementById('rankList');
+  const rankCheckBtn = document.getElementById('rankCheckBtn');
+  const rankShuffleBtn = document.getElementById('rankShuffleBtn');
+  const rankResult = document.getElementById('rankResult');
+  let rankOrder = [];
+  let dragSrcId = null;
+
+  function shuffleRank(){
+    rankOrder = RANK_ITEMS.map(it => it.id);
+    for(let i = rankOrder.length - 1; i > 0; i--){
+      const j = secureRandomInt(i + 1);
+      [rankOrder[i], rankOrder[j]] = [rankOrder[j], rankOrder[i]];
+    }
+    // avoid accidentally starting already-solved
+    if(rankOrder.join() === RANK_CORRECT_ORDER.join()){
+      [rankOrder[0], rankOrder[1]] = [rankOrder[1], rankOrder[0]];
+    }
+    rankResult.classList.add('hidden');
+    renderRank();
+  }
+
+  function renderRank(){
+    rankList.innerHTML = rankOrder.map((id, i) => {
+      const item = RANK_ITEMS.find(it => it.id === id);
+      return `<li class="rank-item" draggable="true" data-id="${id}">
+        <span class="rank-num">${i + 1}</span>
+        <span class="rank-text">${item.text}</span>
+        <span class="rank-arrows">
+          <button type="button" data-dir="up" data-id="${id}" aria-label="Move up">\u2191</button>
+          <button type="button" data-dir="down" data-id="${id}" aria-label="Move down">\u2193</button>
+        </span>
+      </li>`;
+    }).join('');
+  }
+
+  function moveRank(id, dir){
+    const i = rankOrder.indexOf(id);
+    const j = dir === 'up' ? i - 1 : i + 1;
+    if(j < 0 || j >= rankOrder.length) return;
+    [rankOrder[i], rankOrder[j]] = [rankOrder[j], rankOrder[i]];
+    renderRank();
+  }
+
+  rankList.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-dir]');
+    if(!btn) return;
+    moveRank(btn.dataset.id, btn.dataset.dir);
+  });
+
+  rankList.addEventListener('dragstart', (e) => {
+    const li = e.target.closest('.rank-item');
+    if(!li) return;
+    dragSrcId = li.dataset.id;
+    li.classList.add('dragging');
+  });
+  rankList.addEventListener('dragend', (e) => {
+    const li = e.target.closest('.rank-item');
+    if(li) li.classList.remove('dragging');
+  });
+  rankList.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+  rankList.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const targetLi = e.target.closest('.rank-item');
+    if(!targetLi || !dragSrcId) return;
+    const targetId = targetLi.dataset.id;
+    if(targetId === dragSrcId) return;
+    const from = rankOrder.indexOf(dragSrcId);
+    const to = rankOrder.indexOf(targetId);
+    rankOrder.splice(from, 1);
+    rankOrder.splice(to, 0, dragSrcId);
+    dragSrcId = null;
+    renderRank();
+  });
+
+  rankCheckBtn.addEventListener('click', () => {
+    let correctCount = 0;
+    const rows = rankList.querySelectorAll('.rank-item');
+    rows.forEach((row, i) => {
+      const id = row.dataset.id;
+      const isRight = id === RANK_CORRECT_ORDER[i];
+      row.classList.toggle('correct', isRight);
+      row.classList.toggle('incorrect', !isRight);
+      if(isRight) correctCount++;
+      const item = RANK_ITEMS.find(it => it.id === id);
+      if(!row.querySelector('.rank-explain')){
+        const span = document.createElement('span');
+        span.className = 'rank-explain';
+        span.textContent = item.explain;
+        row.querySelector('.rank-text').appendChild(span);
+      }
+    });
+
+    let message;
+    if(correctCount === 5) message = "Perfect \u2014 fully tempered! You've got sharp instincts for this.";
+    else if(correctCount >= 3) message = "Solid instincts, a couple of spots swapped.";
+    else message = "Trickier than it looks, right? Read the explanations below.";
+
+    rankResult.innerHTML = `<div class="rank-score">${correctCount} of 5 in the right spot</div><div>${message}</div>`;
+    rankResult.classList.remove('hidden');
+  });
+
+  rankShuffleBtn.addEventListener('click', shuffleRank);
+
+  shuffleRank();
+
+})();
+</script>
+
+</body>
+</html>
