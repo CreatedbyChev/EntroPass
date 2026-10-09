@@ -1,11 +1,15 @@
 # PROJECT OVERVIEW
 
-EntroPass is a passphrase generator and strength checker that helps you create passwords that are easy for humans to remember and painfully hard for computers to guess. It measures strength the way attackers actually think about it: in bits of entropy, 
+EntroPass is a web-based, user interactive password manager that helps users create passwords or phrases that are easy for humans to remember and painfully hard for computers to guess. It measures strength the way attackers actually think about it: in bits of entropy, a unit of measure for randomness and cryptography. 
+
+Its purpose is to educate users on the importance of password security, while demonstrating the key components of a strong password/passphrase. 
+
 An educational user interactive password/passphrase generator and strength checker, reworked from the original C++ console version into an interactive, animated web app.
 
-Everything runs client-side in `index.html` — no server, no build step, no dependencies except Google Fonts.
 
 ## The Problem:
+How many times have you heard the
+
 
 1. Create a new GitHub repository (or use an existing one).
 2. Add `index.html` to the root of the repo (this file's name matters — GitHub Pages looks for `index.html`).
