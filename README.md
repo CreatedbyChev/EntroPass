@@ -23,13 +23,8 @@ EntroPass is built to end the password struggle once and for all. If weak passwo
 Instead of forcing people to choose between “easy but unsafe” or “secure but impossible to remember,” EntroPass gives them a third option: strong, personalized, unforgettable security.
 
 ## Its Features:
-- **Password generator**: same idea (pick from uppercase/lowercase/digits/symbols, choose a length), but now uses `crypto.getRandomValues` for randomness instead of a seeded PRNG, and lets you toggle character sets on and off live.
-- **Passphrase generator**: same leetspeak-style substitution concept (a→@, e→3, i→1, o→0, s→$), extended with more substitution options and randomized per-character choices so two runs of the same phrase don't look identical.
-- **Strength checker**: rewritten from scratch — the original had a bug (`upperCase[c]` etc. treated array-indexing as a lookup, which isn't valid). The new version calculates actual entropy in bits, flags common weak passwords, repeated characters, and sequential runs (`abc`, `123`), and estimates realistic crack times for both online and offline attacks.
-- **Education layer**: expandable "how this works" sections explain entropy, why length beats complexity, and how the passphrase tempering works — new relative to the original, which had no explanatory content.
-- **Visual theme**: a blacksmith's forge metaphor — password strength is shown as heat, from a dull ember (weak) to white-hot (very strong), with small animations when you generate or test a password.
+- **Passphrase Generator**: build your own secure passphrase or have EntroPass generate one for you. See how substitution concepts (a→@, e→3, i→1, o→0, s→$) and randomized per-character choices affects entropy. 
+- **Strength Checker**: see how strong your current password is, watch it get cracked through a simulation brute force and how long it takes both for both online and offline attacks.
+- **Test Your IQ**: test how much knowledge you have on password security. Expandable "how this works" sections explain entropy, why length beats complexity, and how the passphrase tempering works.
+- **Password Jeopardy**: face off against EntroBot in a friendly competition of who can spot best practices and identify strong passwords/passphrase.
 
-## Features
-
-- No password you type is transmitted anywhere — open the page source or your browser's network tab at any time to verify.
-- The character-substitution map and common-password list are intentionally small and readable in the source if you want to extend them.
