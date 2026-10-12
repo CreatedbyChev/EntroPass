@@ -892,6 +892,10 @@
       scroll-behavior: auto !important;
     }
   }
+
+  /* anchor links clear the sticky nav */
+  #evolution, #features, #stats { scroll-margin-top: 84px; }
+  .wb-tool { scroll-margin-top: 120px; }
 </style>
 </head>
 <body>
@@ -911,7 +915,7 @@
   <ul class="nav-links">
     <li><a href="#stats">Impact</a></li>
     <li><a href="#features">Features</a></li>
-    <li><a href="#features" class="nav-cta">Try it now</a></li>
+    <li><a href="#tool-generate" class="nav-cta">Try it now</a></li>
   </ul>
 </nav>
 
@@ -949,11 +953,11 @@
     </p>
 
     <div class="hero-btns" style="opacity:0; animation: wordRise 0.9s 0.85s cubic-bezier(.2,.8,.2,1) forwards;">
-      <a href="#features" class="btn btn-primary">
+      <a href="#tool-generate" class="btn btn-primary">
         Try it now
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg>
       </a>
-      <a href="#features" class="btn btn-ghost">See how it works</a>
+      <a href="#evolution" class="btn btn-ghost">See how it works</a>
     </div>
   </div>
 
